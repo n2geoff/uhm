@@ -1,6 +1,6 @@
 {
-    "name": "@n2geoff/um",
-    "version": "0.5.0",
+    "name": "@n2geoff/uhm",
+    "version": "0.6.0",
     "exports": "./index.js",
     "tasks": {
       "dev": "deno run --watch index.js",

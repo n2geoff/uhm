@@ -47,8 +47,8 @@ export default function app(opts) {
                     // update date from action return
                     Object.assign(state, action(data, ...args));
 
-                    // call update
-                    update();
+                    // delay update
+                    setTimeout(() => update(), 20);
                 };
             }
         });
