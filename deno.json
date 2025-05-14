@@ -4,8 +4,8 @@
     "exports": "./index.js",
     "tasks": {
       "dev": "deno run --watch index.js",
-      "format": "deno run -A npm:rollup index.js --file dist/um.js --format esm",
-      "minify": "deno run -A npm:terser dist/um.js -c -o dist/um.min.js --source-map url",
+      "format": "deno run -A npm:rollup index.js --file dist/uhm.js --format esm",
+      "minify": "deno run -A npm:terser dist/uhm.js -c -o dist/uhm.min.js --source-map url",
       "build": "deno task format && deno task minify"
     }
 }

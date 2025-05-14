@@ -121,7 +121,7 @@ var diff = {
     },
 };
 
-/*! Um v0.5.0 | MIT LICENSE | https://github.com/n2geoff/um */
+/*! Uhm v0.6.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
 
 /**
  * App Builder
@@ -168,8 +168,8 @@ function app(opts) {
                     // update date from action return
                     Object.assign(state, action(data, ...args));
 
-                    // call update
-                    update();
+                    // delay update
+                    setTimeout(() => update(), 20);
                 };
             }
         });

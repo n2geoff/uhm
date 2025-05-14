@@ -1,10 +1,10 @@
-# Um
+# Uhm
 
 > Minimal JavaScript UI Builder
 
-Um, is an experimental composable UI builder that takes ideas from early [hyperapp](https://github.com/jorgebucaran/hyperapp) design, but does not stick to strict Elm Architecture.
+Uhm, is an experimental composable UI builder that takes ideas from early [hyperapp](https://github.com/jorgebucaran/hyperapp) design, but does not stick to strict Elm Architecture.
 
-Um, because you should think about, um, NOT using it.
+Uhm, because you should think about, ah, NOT using it.
 
 ## Features
 - Real DOM
@@ -18,12 +18,12 @@ Um, because you should think about, um, NOT using it.
 Via JSDelivr CDN
 
 ```js
-import {app,h} from "https://cdn.jsdelivr.net/gh/n2geoff/um/dist/um.min.js";
+import {app,h} from "https://cdn.jsdelivr.net/gh/n2geoff/uhm/dist/uhm.min.js";
 ```
 
 ## Overview
 
-**Um** only has 2 exported functions, `app()`  and `h()`, and the later is optional.
+**Uhm** only has 2 exported functions, `app()`  and `h()`, and the later is optional.
 
 ### app({opts})
 
@@ -33,10 +33,10 @@ The `app()` is the builder function and takes an `opts` object:
 
 | Property  | Default                    | Description                                                 |
 | --------- | -------------------------- | ----------------------------------------------------------- |
-| `state`   | `{}`                       | initial data state                                          |
-| `actions` | `{}`                       | function object passed to view                              |
+| `state`   | `{}`                       | initial data state                                        |
+| `actions` | `{key: (state) => {}}`     | function object passed to view                              |
 | `view`    | `(state, actions) => null` | function that takes state and actions and returns valid dom |
-| `mount`   | `body`                    | valid query selector as mounting point                      |
+| `mount`   | `body`                     | valid query selector as mounting point                      |
 
 #### Output:
 
@@ -46,6 +46,8 @@ Interface with internal state for utility expansion
 | --------------- | --------------------------------------------- |
 | `state` | internal state object |
 | `update()` | function to render dom state |
+
+> !IMPORTANT: long running operations require manual `update()` called
 
 ### h(tag, [...args])
 

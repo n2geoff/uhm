@@ -1,6 +1,6 @@
 import diff from "./emerj.js";
 
-/*! Um v0.5.0 | MIT LICENSE | https://github.com/n2geoff/um */
+/*! Uhm v0.6.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
 
 /**
  * App Builder
