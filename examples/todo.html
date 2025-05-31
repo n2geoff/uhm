@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHM | TODO - HTML</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/n2geoff/stylelite/dist/stylelite.min.css">
+</head>
+
+<body>
+    <main>
+        <div id="app"></div>
+    </main>
+
+    <script type="module">
+        import { app, html } from '../src/app3.js';
+
+        const $ = (s) => Array.from(document.querySelectorAll(s));
+
+        const todo = app({
+            state: { todos: [], value: "" },
+            actions: {
+                submit: (state, event) => {
+                if (event.key === "Enter") {
+                    const value = $("#todo")[0].value;
+                    if (String(value).trim()) {
+                    $("#todo")[0].value = "";
+                    return { ...state, todos: [...state.todos, value], value: "" };
+                    }
+                }
+                return state;
+                },
+            },
+            view: (state, actions) => {
+                return html`
+                <main>
+                    <h1 style="text-align: center">Todos</h1>
+                    <div>
+                    <input
+                        id="todo"
+                        placeholder="What needs to be done?"
+                        value="${state.value}"
+                        onkeypress="${actions.submit}"
+                    />
+                    </div>
+                    <div>
+                    ${state.todos.map((i, index) => html`
+                        <div id="todo-${index}" style="border-bottom: 1px solid #CCC">
+                        <label>
+                            <input type="checkbox" />
+                            <span>${i}</span>
+                        </label>
+                        </div>
+                    `)}
+                    </div>
+                    <hr />
+                    <div class="grid">
+                    <div style="margin-left: 1rem">${state.todos.length} items left</div>
+                    <div class="grid">
+                        <button class="link">All</button>
+                        <button class="link">Active</button>
+                        <button class="link">Completed</button>
+                    </div>
+                    <div>
+                        <button class="link" style="float:right">Clear Completed</button>
+                    </div>
+                    </div>
+                    <hr />
+                </main>
+                `;
+            },
+            mount: "#app",
+        });
+    </script>
+</body>
+
+</html>
