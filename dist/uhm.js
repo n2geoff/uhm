@@ -121,7 +121,7 @@ var diff = {
     },
 };
 
-/*! Uhm v0.6.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
+/*! Uhm v0.7.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
 
 /**
  * App Builder
@@ -139,21 +139,10 @@ var diff = {
  */
 function app(opts) {
     // initial setup
-    const state   = check(opts.state, {});
-    const view    = check(opts.view, () => null);
-    const actions = check(opts.actions, {});
-    const mount   = opts.mount || "body";
-
-    /**
-     * simple type validation check
-     *
-     * @param {*} value
-     * @param {String} type
-     * @returns {*}
-     */
-    function check(value, type) {
-        return typeof value === typeof type ? value : type;
-    }
+    const state   = opts.state || {};
+    const view    = opts.view || (() => null);
+    const actions = opts.actions || {};
+    const mount   = opts.mount || 'body';
 
     /**
      * Assigns Dispatch-able Actions into App
@@ -163,9 +152,9 @@ function app(opts) {
      */
     function dispatch(data, actions) {
         Object.entries(actions).forEach(([name, action]) => {
-            if (typeof action === "function") {
+            if (typeof action === 'function') {
                 actions[name] = (...args) => {
-                    // update date from action return
+                    // update date from action
                     Object.assign(state, action(data, ...args));
 
                     // delay update
@@ -179,7 +168,20 @@ function app(opts) {
 
     /** update dom */
     const update = () => {
-        diff.merge(document.querySelector(mount), view(state, actions));
+        const parentNode = document.querySelector(mount);
+        let result = view(state, actions);
+
+        // handle multiple nodes
+        if (Array.isArray(result)) {
+            const fragment = document.createDocumentFragment();
+            fragment.append(...result.filter(node => node != null));
+            result = fragment;
+        } else if (typeof result === 'string') {
+            const temp = document.createElement(parentNode.tagName);
+            temp.innerHTML = result;
+            result = temp;
+        }
+        diff.merge(parentNode, result);
     };
 
     // mount view
@@ -187,7 +189,7 @@ function app(opts) {
         dispatch(state, actions);
     }
 
-    return {state,update}
+    return { state, update };
 }
 
 /**
@@ -196,31 +198,188 @@ function app(opts) {
  * Generates new DOM element(s) from a tag, attributes
  *
  * @param {String} tag                 - tag name
- * @param {Object|String|Array} args   - attributes, text or array of child elements
+ * @param {Object} props               - tag attributes
+ * @param {Object|String|Array} args   - text or array of child elements
  *
  * @returns {HTMLElement} The created DOM element(s)
  */
-function h(tag, ...args) {
-    const el = document.createElement(tag);
+function h(tagName, props, ...children) {
+    const el = tagName === DocumentFragment ? document.createDocumentFragment() : document.createElement(tagName);
+    const isScalar = (value) => typeof value === 'string' || typeof value === 'number';
+    const booleanAttrs = ['disabled', 'checked', 'selected', 'hidden', 'readonly', 'required', 'open', 'autoplay', 'loop', 'muted'];
 
-    // support all scalar values as TextNodes
-    const isScalar = (value) => ["boolean", "string", "number"].includes(typeof value);
-
-    for(let i = 0; i < args.length; i++) {
-        if (isScalar(args[i])) {
-            el.appendChild(document.createTextNode(args[i]));
-        } else if (Array.isArray(args[i])) {
-            el.append(...args[i]);
-        } else {
-            for(const [k,v] of Object.entries(args[i])) {
-                // if not both ways, some attributes do not render
-                el.setAttribute(k, v);
-                el[k] = v;
+    // Handle props (object or null)
+    if (props != null && typeof props === 'object' && !Array.isArray(props)) {
+        for (const [key, value] of Object.entries(props)) {
+            if (value == null) continue;
+            if (booleanAttrs.includes(key)) {
+                if (value === true) {
+                    el.setAttribute(key, '');
+                    el[key] = true;
+                } else if (value === false) {
+                    el.removeAttribute(key);
+                    el[key] = false;
+                }
+                continue;
             }
+            if (key.startsWith('on') && typeof value === 'function') {
+                el.addEventListener(key.slice(2).toLowerCase(), value);
+                continue;
+            }
+            if (key === 'class') {
+                el.className = value;
+                continue;
+            }
+            if (key === 'style' && typeof value === 'object') {
+                Object.assign(el.style, value);
+                continue;
+            }
+            el.setAttribute(key, value);
+            if (key in el) {
+                el[key] = value;
+            }
+        }
+    } else if (props != null) {
+        // If props is not an object, treat it as a child
+        children.unshift(props);
+    }
+
+    // Handle children
+    for (const child of children) {
+        if (child == null) continue;
+        if (isScalar(child)) {
+            el.appendChild(document.createTextNode(child));
+        } else if (Array.isArray(child)) {
+            const fragment = document.createDocumentFragment();
+            fragment.append(...child.filter(c => c != null));
+            el.appendChild(fragment);
+        } else if (child instanceof Node) {
+            el.appendChild(child);
+        } else if (typeof child === 'boolean') {
+            console.warn(`Boolean child ${child} passed to h() for tag "${tagName}". Booleans are not rendered.`);
+        } else {
+            console.error(`Unsupported child type: ${typeof child} for tag "${tagName}" in h() function`);
         }
     }
 
     return el;
 }
 
-export { app, h };
+// source: https://github.com/dy/xhtm | MIT
+
+const FIELD = '\ue000', QUOTES = '\ue001';
+
+function htm (statics) {
+  let h = this, prev = 0, current = [null], field = 0, args, name, value, quotes = [], quote = 0, last, level = 0, pre = false;
+
+  const evaluate = (str, parts = [], raw) => {
+    let i = 0;
+    str = (!raw && str === QUOTES ?
+      quotes[quote++].slice(1,-1) :
+      str.replace(/\ue001/g, m => quotes[quote++]));
+
+    if (!str) return str
+    str.replace(/\ue000/g, (match, idx) => {
+      if (idx) parts.push(str.slice(i, idx));
+      i = idx + 1;
+      return parts.push(arguments[++field])
+    });
+    if (i < str.length) parts.push(str.slice(i));
+    return parts.length > 1 ? parts : parts[0]
+  };
+
+  // close level
+  const up = () => {
+    // console.log('-level', current);
+    [current, last, ...args] = current;
+    current.push(h(last, ...args));
+    if (pre === level--) pre = false; // reset <pre>
+  };
+
+  let str = statics
+    .join(FIELD)
+    .replace(/<!--[^]*?-->/g, '')
+    .replace(/<!\[CDATA\[[^]*\]\]>/g, '')
+    .replace(/('|")[^\1]*?\1/g, match => (quotes.push(match), QUOTES));
+
+    // ...>text<... sequence
+  str.replace(/(?:^|>)((?:[^<]|<[^\w\ue000\/?!>])*)(?:$|<)/g, (match, text, idx, str) => {
+    let tag, close;
+
+    if (idx) {
+      str.slice(prev, idx)
+        // <abc/> → <abc />
+        .replace(/(\S)\/$/, '$1 /')
+        .split(/\s+/)
+        .map((part, i) => {
+          // </tag>, </> .../>
+          if (part[0] === '/') {
+            part = part.slice(1);
+            // ignore duplicate empty closers </input>
+            if (EMPTY[part]) return
+            // ignore pairing self-closing tags
+            close = tag || part || 1;
+            // skip </input>
+          }
+          // <tag
+          else if (!i) {
+            tag = evaluate(part);
+            // <p>abc<p>def, <tr><td>x<tr>
+            if (typeof tag === 'string') { tag = tag.toLowerCase(); while (CLOSE[current[1]+tag]) up(); }
+            current = [current, tag, null];
+            level++;
+            if (!pre && PRE[tag]) pre = level;
+            // console.log('+level', tag)
+            if (EMPTY[tag]) close = tag;
+          }
+          // attr=...
+          else if (part) {
+            let props = current[2] || (current[2] = {});
+            if (part.slice(0, 3) === '...') {
+              Object.assign(props, arguments[++field]);
+            }
+            else {
+              [name, value] = part.split('=');
+              Array.isArray(value = props[evaluate(name)] = value ? evaluate(value) : true) &&
+              // if prop value is array - make sure it serializes as string without csv
+              (value.toString = value.join.bind(value, ''));
+            }
+          }
+        });
+    }
+
+    if (close) {
+      if (!current[0]) err(`Wrong close tag \`${close}\``);
+      up();
+      // if last child is optionally closable - close it too
+      while (last !== close && CLOSE[last]) up();
+    }
+    prev = idx + match.length;
+
+    // fix text indentation
+    if (!pre) text = text.replace(/\s*\n\s*/g,'').replace(/\s+/g, ' ');
+
+    if (text) evaluate((last = 0, text), current, true);
+  });
+
+  if (current[0] && CLOSE[current[1]]) up();
+
+  if (level) err(`Unclosed \`${current[1]}\`.`);
+
+  return current.length < 3 ? current[1] : (current.shift(), current)
+}
+
+const err = (msg) => { throw SyntaxError(msg) };
+
+// self-closing elements
+const EMPTY = htm.empty = {};
+
+// optional closing elements
+const CLOSE = htm.close = {};
+
+// preformatted text elements
+const PRE = htm.pre = {};
+
+const html = htm.bind(h);
+
+export { app, h, html };

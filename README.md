@@ -9,9 +9,12 @@ Uhm, because you should think about, ah, NOT using it.
 ## Features
 - Real DOM
 - [Non-destructive (re)Rendering](https://github.com/bryhoyt/emerj)
+- Supports tagged html syntax via [xhtm](https://github.com/dy/xhtm)
 - No Build System
 - No Over Engineering
-- ~2kb minified
+- ~6kb minified / ~3kb gzip
+
+> NOTE: experimenting with different builds, sizes may vary
 
 ## Install
 
@@ -23,7 +26,7 @@ import {app,h} from "https://cdn.jsdelivr.net/gh/n2geoff/uhm/dist/uhm.min.js";
 
 ## Overview
 
-**Uhm** only has 2 exported functions, `app()`  and `h()`, and the later is optional.
+**Uhm** only has 3 exported functions, `app()`, `h()` and `html`, and the later is optional.
 
 ### app({opts})
 
@@ -49,16 +52,16 @@ Interface with internal state for utility expansion
 
 > !IMPORTANT: long running operations require manual `update()` called
 
-### h(tag, [...args])
+### h(tag, attrs, [...children])
 
-The `h()` is an **optional** hypertext build utility that weighs in around **~250b** and is provided as *a* way to build out your `view` DOM, but you can build your `view` using any method you like as long as it returns valid DOM.
+The `h()` is a hypertext build utility that provides *a* way to build out your `view` DOM, but you can build your `view` using `html` or even `jsx`, really any method you like as long as it returns valid DOM.
 
 
 ## Example
 
 ```html
     <script type="module">
-        import {app, h} from "./um.min.js";
+        import {app, h} from "./uhm.min.js";
 
         const myapp = app({
             state: {name: "[Your Name Here]", job: "Developer"},
@@ -83,5 +86,4 @@ The `h()` is an **optional** hypertext build utility that weighs in around **~25
 
 ### TODO
 
-- Some tag attributes do not work, like rowspan on td
 - Rethink State Management, might be ok
