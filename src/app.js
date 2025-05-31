@@ -1,6 +1,6 @@
-import diff from "./emerj.js";
+import diff from './emerj.js';
 
-/*! Uhm v0.6.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
+/*! Uhm v0.7.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
 
 /**
  * App Builder
@@ -16,23 +16,12 @@ import diff from "./emerj.js";
  *
  * @returns {Object}                state and update() interface
  */
-export default function app(opts) {
+export function app(opts) {
     // initial setup
-    const state   = check(opts.state, {});
-    const view    = check(opts.view, () => null);
-    const actions = check(opts.actions, {});
-    const mount   = opts.mount || "body";
-
-    /**
-     * simple type validation check
-     *
-     * @param {*} value
-     * @param {String} type
-     * @returns {*}
-     */
-    function check(value, type) {
-        return typeof value === typeof type ? value : type;
-    }
+    const state   = opts.state || {};
+    const view    = opts.view || (() => null);
+    const actions = opts.actions || {};
+    const mount   = opts.mount || 'body';
 
     /**
      * Assigns Dispatch-able Actions into App
@@ -42,9 +31,9 @@ export default function app(opts) {
      */
     function dispatch(data, actions) {
         Object.entries(actions).forEach(([name, action]) => {
-            if (typeof action === "function") {
+            if (typeof action === 'function') {
                 actions[name] = (...args) => {
-                    // update date from action return
+                    // update date from action
                     Object.assign(state, action(data, ...args));
 
                     // delay update
@@ -58,13 +47,26 @@ export default function app(opts) {
 
     /** update dom */
     const update = () => {
-        diff.merge(document.querySelector(mount), view(state, actions));
-    }
+        const parentNode = document.querySelector(mount);
+        let result = view(state, actions);
+
+        // handle multiple nodes
+        if (Array.isArray(result)) {
+            const fragment = document.createDocumentFragment();
+            fragment.append(...result.filter(node => node != null));
+            result = fragment;
+        } else if (typeof result === 'string') {
+            const temp = document.createElement(parentNode.tagName);
+            temp.innerHTML = result;
+            result = temp;
+        }
+        diff.merge(parentNode, result);
+    };
 
     // mount view
     if (opts.view && mount) {
         dispatch(state, actions);
     }
 
-    return {state,update}
+    return { state, update };
 }
