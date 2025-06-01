@@ -121,7 +121,7 @@ var diff = {
     },
 };
 
-/*! Uhm v0.7.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
+/*! Uhm v0.8.0 | MIT LICENSE | https://github.com/n2geoff/uhm */
 
 /**
  * App Builder
@@ -129,20 +129,19 @@ var diff = {
  * Composes state, actions, view together as
  * mountable ui
  *
+ * @param {String}   mount          element or querySelector value
  * @param {Object}   opts           options bag of state, view, actions, and mount
  * @param {Object}   opts.state     initial app object state
  * @param {Function} opts.view      function that returns dom. state and actions are passed in
  * @param {Object}   opts.actions   object functions includes and return state
- * @param {String}   opts.mount     querySelector value
  *
  * @returns {Object}                state and update() interface
  */
-function app(opts) {
+function app(mount = 'body', opts = {}) {
     // initial setup
     const state   = opts.state || {};
     const view    = opts.view || (() => null);
     const actions = opts.actions || {};
-    const mount   = opts.mount || 'body';
 
     /**
      * Assigns Dispatch-able Actions into App
@@ -168,7 +167,7 @@ function app(opts) {
 
     /** update dom */
     const update = () => {
-        const parentNode = document.querySelector(mount);
+        const parentNode = typeof mount === 'string' ? document.querySelector(mount) : mount;
         let result = view(state, actions);
 
         // handle multiple nodes
@@ -265,8 +264,7 @@ function h(tagName, props, ...children) {
     return el;
 }
 
-// source: https://github.com/dy/xhtm | MIT
-
+/*! xhtm v1.6.2 | MIT LICENSE | https://github.com/dy/xhtm */
 const FIELD = '\ue000', QUOTES = '\ue001';
 
 function htm (statics) {
