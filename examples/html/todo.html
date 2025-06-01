@@ -14,11 +14,11 @@
     </main>
 
     <script type="module">
-        import { app, html } from '../src/app3.js';
+        import { app, html } from '../../index.js';
 
         const $ = (s) => Array.from(document.querySelectorAll(s));
 
-        const todo = app({
+        const todo = app("#app", {
             state: { todos: [], value: "" },
             actions: {
                 submit: (state, event) => {
@@ -69,8 +69,7 @@
                     <hr />
                 </main>
                 `;
-            },
-            mount: "#app",
+            }
         });
     </script>
 </body>

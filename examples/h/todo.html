@@ -20,11 +20,11 @@
     </main>
 
     <script type="module">
-        import {app, h} from "../index.js";
+        import {app, h} from "../../index.js";
 
         const $ = document.querySelector.bind(document);
 
-        const todo = app({
+        const todo = app("#app", {
             state: {todos: [], value: ""},
             actions: {
                 submit: (state, event) => {
@@ -71,8 +71,7 @@
                     ]),
                     h("hr"),
                 ]);
-            },
-            mount: "#app"
+            }
         });
 
         // Update State outside Creation
