@@ -1,5 +1,4 @@
-// source: https://github.com/dy/xhtm | MIT
-
+/*! xhtm v1.6.2 | MIT LICENSE | https://github.com/dy/xhtm */
 const FIELD = '\ue000', QUOTES = '\ue001'
 
 export default function htm (statics) {
