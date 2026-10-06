@@ -1,3 +1,5 @@
+> SEE: https://github.com/n2geoff/mite for successor
+
 # Uhm
 
 > Minimal JavaScript UI Builder
